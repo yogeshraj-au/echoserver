@@ -1,6 +1,8 @@
 pipeline {
-    agent any
-    
+    agent {
+      label 'Docker'
+    }
+  
     environment {
         // Define environment variables
         DOCKER_REGISTRY = 'docker.io'
