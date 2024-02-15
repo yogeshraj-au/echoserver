@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+    
+    environment {
+        // Define environment variables
+        DOCKER_REGISTRY = 'docker.io'
+        DOCKER_IMAGE_NAME = 'imageimpressario/echoserver'
+        GIT_REPO_URL = 'https://github.com/yogeshraj-au/echoserver.git'
+        DOCKERFILE_PATH = 'Dockerfile'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the Git repository
+                git branch: 'main', url: env.GIT_REPO_URL
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                // Build the Docker image
+                script {
+                    docker.build(env.DOCKER_IMAGE_NAME, "--file ${env.DOCKERFILE_PATH} .")
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                // Login to Docker Hub
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME')]) {
+                    script {
+                        docker.withRegistry("https://${env.DOCKER_REGISTRY}", "${env.DOCKER_HUB_USERNAME}", "${env.DOCKER_HUB_PASSWORD}") {
+                            // Push the Docker image to Docker Hub
+                            docker.image(env.DOCKER_IMAGE_NAME).push()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
