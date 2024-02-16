@@ -9,6 +9,7 @@ pipeline {
         DOCKER_IMAGE_NAME = 'imageimpressario/echoserver'
         GIT_REPO_URL = 'https://github.com/yogeshraj-au/echoserver.git'
         DOCKERFILE_PATH = 'Dockerfile'
+        BASE_VERSION = '1.0'
     }
 
     stages {
@@ -21,9 +22,11 @@ pipeline {
         
         stage('Build Docker Image') {
             steps {
-                // Build the Docker image
-                script {
-                    docker.build(env.DOCKER_IMAGE_NAME, "--file ${env.DOCKERFILE_PATH} .")
+                // Generate semantic version and tag the Docker image
+                    def version = "${BASE_VERSION}.${env.BUILD_NUMBER}"
+                    def taggedImage = "${env.DOCKER_IMAGE_NAME}:${version}"
+                    
+                    docker.build(taggedImage, "--file ${env.DOCKERFILE_PATH} .")
                 }
             }
         }
