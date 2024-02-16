@@ -22,7 +22,8 @@ pipeline {
         
         stage('Build Docker Image') {
             steps {
-                // Generate semantic version and tag the Docker image
+                script {
+                    // Generate semantic version and tag the Docker image
                     def version = "${BASE_VERSION}.${env.BUILD_NUMBER}"
                     def taggedImage = "${env.DOCKER_IMAGE_NAME}:${version}"
                     
@@ -36,7 +37,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME')]) {
                     script {
                         docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-                            docker.image(env.DOCKER_IMAGE_NAME).push()
+                            docker.image(taggedImage).push()
                         }
                     }
                 }
