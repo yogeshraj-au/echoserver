@@ -36,13 +36,21 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME')]) {
                     script {
-                        // Push tagged image to Docker Hub
                         docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
                             docker.image(env.TAGGED_IMAGE).push()
                         }
                     }
                 }
             }
+        }
+    }
+    
+    post {
+        success {
+            echo "Docker image build and push successful"
+        }
+        failure {
+            echo "Docker image build or push failed"
         }
     }
 }
