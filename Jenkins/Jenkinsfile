@@ -30,11 +30,9 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                // Login to Docker Hub
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME')]) {
                     script {
-                        docker.withRegistry("https://${env.DOCKER_REGISTRY}", "${env.DOCKER_HUB_USERNAME}", "${env.DOCKER_HUB_PASSWORD}") {
-                            // Push the Docker image to Docker Hub
+                        docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
                             docker.image(env.DOCKER_IMAGE_NAME).push()
                         }
                     }
