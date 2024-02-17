@@ -1,6 +1,6 @@
 pipeline {
     agent {
-      label 'aws'
+        label 'aws'
     }
     
     environment {
@@ -80,6 +80,7 @@ pipeline {
                 }
             }
         }
+    }
     
     post {
         success {
