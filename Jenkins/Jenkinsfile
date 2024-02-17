@@ -12,6 +12,7 @@ pipeline {
         DOCKERFILE_PATH = 'Dockerfile'
         BASE_VERSION = '1.0'
         DIRECTORY_PATH = 'environment/stage/echoserver_1/'
+        GIT_REPO_NAME = 'echoserver_app_kubernetes'
     }
 
     stages {
@@ -68,11 +69,10 @@ pipeline {
                     sh "git add ."
                     sh "git commit -m 'Update Docker image tag to ${env.TAGGED_IMAGE}'"
                     sh "git push origin feature/new_branch"
-                }
 
-                // Create a new pull request
-                script {
-                    sh "gh pr create --base main --head feature/new_branch --title 'Updated Docker image tag'"
+                    // Push changes with Git credentials
+                    withCredentials([usernamePassword(credentialsId: 'git', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                        sh "git push https://${env.GIT_USERNAME}:${env.GIT_PASSWORD}@github.com/${env.GIT_USERNAME}/${env.GIT_REPO_NAME}.git feature/new_branch"
                 }
             }
         }
