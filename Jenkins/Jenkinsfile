@@ -72,11 +72,9 @@ pipeline {
                     
                     // Push changes with Git credentials
                     withCredentials([usernamePassword(credentialsId: 'git', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                        sh "git push https://${env.GIT_USERNAME}:${env.GIT_PASSWORD}@github.com/${env.GIT_USERNAME}/${env.GIT_REPO_NAME}.git ${branchName}"
+                        sh "git push https://${env.GIT_USERNAME}:${env.GIT_PASSWORD}@github.com/yogeshraj-au/${env.GIT_REPO_NAME}.git ${branchName}"
+                        sh "gh pr create --base main --head ${branchName} --title 'Updated Docker image tag'"
                     }
-                    
-                    // Create a new pull request
-                    sh "gh pr create --base main --head ${branchName} --title 'Updated Docker image tag'"
                 }
             }
         }
