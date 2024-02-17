@@ -59,7 +59,6 @@ pipeline {
                     def tag = env.TAGGED_IMAGE.tokenize(':')[1]
                     
                     // Update image tag in the cloned repository
-                    //sh "sed -i 's|${env.DOCKER_IMAGE_NAME}:[0-9.]*|${env.DOCKER_IMAGE_NAME}:${tag}|g' environment/stage/echoserver_1/"
                     sh "find ${env.DIRECTORY_PATH} -type f -exec sed -i 's|${env.DOCKER_IMAGE_NAME}:[0-9.]*|${env.DOCKER_IMAGE_NAME}:${tag}|g' {} +"
                 }
 
@@ -68,15 +67,19 @@ pipeline {
                     sh "git checkout -b feature/new_branch"
                     sh "git add ."
                     sh "git commit -m 'Update Docker image tag to ${env.TAGGED_IMAGE}'"
-                    sh "git push origin feature/new_branch"
-
+                    
                     // Push changes with Git credentials
                     withCredentials([usernamePassword(credentialsId: 'git', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                         sh "git push https://${env.GIT_USERNAME}:${env.GIT_PASSWORD}@github.com/${env.GIT_USERNAME}/${env.GIT_REPO_NAME}.git feature/new_branch"
+                    }
+                }
+
+                // Create a new pull request
+                script {
+                    sh "gh pr create --base main --head feature/new_branch --title 'Updated Docker image tag'"
                 }
             }
         }
-    }
     
     post {
         success {
