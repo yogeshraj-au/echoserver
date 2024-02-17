@@ -50,7 +50,7 @@ pipeline {
         stage('Clone Another Git Repo and Create PR') {
             steps {
                 // Clone another Git repository
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], userRemoteConfigs: [[url: env.KUBE_GIT_REPO_URL]]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: env.KUBE_GIT_REPO_URL]]])
 
                 // Extract tag from the Docker image name
                 script {
@@ -70,7 +70,7 @@ pipeline {
 
                 // Create a new pull request
                 script {
-                    sh "gh pr create --base master --head feature/new_branch --title 'Update Docker image tag'"
+                    sh "gh pr create --base main --head feature/new_branch --title 'Update Docker image tag'"
                 }
             }
         }
