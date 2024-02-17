@@ -79,7 +79,7 @@ pipeline {
                         sh "git push https://${env.GIT_USERNAME}:${env.GIT_PASSWORD}@github.com/yogeshraj-au/${env.GIT_REPO_NAME}.git ${branchName}"
                         // Set GH_TOKEN for use with GitHub CLI
                         sh "export GH_TOKEN=${env.GH_TOKEN}"
-                        sh "gh pr create --base main --head ${branchName} --title 'Updated Docker image tag'"
+                        sh "gh pr create --base main --head ${branchName} --title 'Updated Docker image tag' --body 'This pull request updates the Docker image tag.'"
                     }
                 }
             }
