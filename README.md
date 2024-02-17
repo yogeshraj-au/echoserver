@@ -1,2 +1,2 @@
 # echoserver
-This repo contains a dockerfile to build a echoserver docker image and jenkinsfile to build a docker image.
+This repo contains a dockerfile to build a echoserver docker image.
