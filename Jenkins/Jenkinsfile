@@ -24,11 +24,13 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Generate semantic version and tag the Docker image
                     def version = "${env.BASE_VERSION}.${env.BUILD_NUMBER}"
-                    env.TAGGED_IMAGE = "${env.DOCKER_IMAGE_NAME}:${version}"
+                    def taggedImage = "${env.DOCKER_IMAGE_NAME}:${version}"
                     
-                    docker.build(env.TAGGED_IMAGE, "--file ${env.DOCKERFILE_PATH} .")
+                    docker.build(taggedImage, "--file ${env.DOCKERFILE_PATH} .")
+                    
+                    // Export tagged image for use in later stages
+                    env.TAGGED_IMAGE = taggedImage
                 }
             }
         }
@@ -72,13 +74,14 @@ pipeline {
                 }
             }
         }
+    }
     
     post {
         success {
-            echo "Docker image build and push successful"
+            echo "Pipeline completed successfully"
         }
         failure {
-            echo "Docker image build or push failed"
+            echo "Pipeline failed"
         }
     }
 }
