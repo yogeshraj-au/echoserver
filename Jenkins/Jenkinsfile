@@ -24,11 +24,13 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Generate semantic version and tag the Docker image
                     def version = "${env.BASE_VERSION}.${env.BUILD_NUMBER}"
-                    env.TAGGED_IMAGE = "${env.DOCKER_IMAGE_NAME}:${version}"
+                    def taggedImage = "${env.DOCKER_IMAGE_NAME}:${version}"
                     
-                    docker.build(env.TAGGED_IMAGE, "--file ${env.DOCKERFILE_PATH} .")
+                    docker.build(taggedImage, "--file ${env.DOCKERFILE_PATH} .")
+                    
+                    // Export tagged image for use in later stages
+                    env.TAGGED_IMAGE = taggedImage
                 }
             }
         }
@@ -48,7 +50,7 @@ pipeline {
         stage('Clone Another Git Repo and Create PR') {
             steps {
                 // Clone another Git repository
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], userRemoteConfigs: [[url: env.KUBE_GIT_REPO_URL]]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: env.KUBE_GIT_REPO_URL]]])
 
                 // Extract tag from the Docker image name
                 script {
@@ -68,17 +70,18 @@ pipeline {
 
                 // Create a new pull request
                 script {
-                    sh "gh pr create --base master --head feature/new_branch --title 'Update Docker image tag'"
+                    sh "gh pr create --base main --head feature/new_branch --title 'Updated Docker image tag'"
                 }
             }
         }
+    }
     
     post {
         success {
-            echo "Docker image build and push successful"
+            echo "Pipeline completed successfully"
         }
         failure {
-            echo "Docker image build or push failed"
+            echo "Pipeline failed"
         }
     }
 }
