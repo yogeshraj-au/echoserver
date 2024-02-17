@@ -56,20 +56,16 @@ pipeline {
             steps {
                 // Clone another Git repository
                 checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: env.KUBE_GIT_REPO_URL]]])
-
-                // Construct branch name based on the tag
-                def branchName = "feature/update-to-" + env.TAG
                 
                 // Extract tag from the Docker image name
                 script {
+                    
+                    def branchName = "feature/update-to-${env.TAG}"
                     def tag = env.TAGGED_IMAGE.tokenize(':')[1]
                     
                     // Update image tag in the cloned repository
                     sh "find ${env.DIRECTORY_PATH} -type f -exec sed -i 's|${env.DOCKER_IMAGE_NAME}:[0-9.]*|${env.DOCKER_IMAGE_NAME}:${tag}|g' {} +"
-                }
 
-                // Create a new branch
-                script {
                     sh "git checkout -b ${branchName}"
                     sh "git add ."
                     sh "git commit -m 'Update Docker image tag to ${env.TAGGED_IMAGE}'"
@@ -78,15 +74,11 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'git', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                         sh "git push https://${env.GIT_USERNAME}:${env.GIT_PASSWORD}@github.com/${env.GIT_USERNAME}/${env.GIT_REPO_NAME}.git ${branchName}"
                     }
-                }
 
-                // Create a new pull request
-                script {
                     sh "gh pr create --base main --head ${branchName} --title 'Updated Docker image tag'"
                 }
             }
         }
-    }
     
     post {
         success {
