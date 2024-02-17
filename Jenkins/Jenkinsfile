@@ -8,6 +8,7 @@ pipeline {
         DOCKER_REGISTRY = 'docker.io'
         DOCKER_IMAGE_NAME = 'imageimpressario/echoserver'
         GIT_REPO_URL = 'https://github.com/yogeshraj-au/echoserver.git'
+        KUBE_GIT_REPO_URL = 'https://github.com/yogeshraj-au/echoserver_app_kubernetes.git'
         DOCKERFILE_PATH = 'Dockerfile'
         BASE_VERSION = '1.0'
     }
@@ -43,7 +44,34 @@ pipeline {
                 }
             }
         }
-    }
+
+        stage('Clone Another Git Repo and Create PR') {
+            steps {
+                // Clone another Git repository
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], userRemoteConfigs: [[url: env.KUBE_GIT_REPO_URL]]])
+
+                // Extract tag from the Docker image name
+                script {
+                    def tag = env.TAGGED_IMAGE.tokenize(':')[1]
+                    
+                    // Update image tag in the cloned repository
+                    sh "sed -i 's|${env.DOCKER_IMAGE_NAME}:[0-9.]*|${env.DOCKER_IMAGE_NAME}:${tag}|g' environment/stage/echoserver_1/"
+                }
+
+                // Create a new branch
+                script {
+                    sh "git checkout -b feature/new_branch"
+                    sh "git add ."
+                    sh "git commit -m 'Update Docker image tag to ${env.TAGGED_IMAGE}'"
+                    sh "git push origin feature/new_branch"
+                }
+
+                // Create a new pull request
+                script {
+                    sh "gh pr create --base master --head feature/new_branch --title 'Update Docker image tag'"
+                }
+            }
+        }
     
     post {
         success {
