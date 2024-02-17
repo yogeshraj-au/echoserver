@@ -58,7 +58,7 @@ pipeline {
                 checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: env.KUBE_GIT_REPO_URL]]])
 
                 // Construct branch name based on the tag
-                def branchName = "feature/update-to-${env.TAG}"
+                def branchName = "feature/update-to-" + env.TAG
                 
                 // Extract tag from the Docker image name
                 script {
